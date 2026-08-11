@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flare — 3D Viewport</title>
+    <link rel="icon" href="public/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="src/style.css" />
+    <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+</script>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand" title="Flare">
+          <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 18.5 12 3.5l8 15H4z" fill="#e87d0d" />
+            <path d="M12 3.5 7.2 13h9.6L12 3.5z" fill="#f5a54a" />
+            <path d="M8.4 16.2 12 20.4l3.6-4.2H8.4z" fill="#4772b3" />
+          </svg>
+          <span class="brand-name">Flare</span>
+        </div>
+
+        <nav class="menubar" id="menubar">
+          <div class="menu">
+            <button class="menu-btn" data-menu="file">File</button>
+            <div class="menu-pop" id="menu-file">
+              <button data-cmd="file.new"><span>New</span><kbd>Ctrl N</kbd></button>
+              <div class="sep"></div>
+              <button data-cmd="file.exportObj"><span>Export OBJ…</span></button>
+              <button data-cmd="file.exportGltf"><span>Export glTF…</span></button>
+            </div>
+          </div>
+          <div class="menu">
+            <button class="menu-btn" data-menu="edit">Edit</button>
+            <div class="menu-pop" id="menu-edit">
+              <button data-cmd="edit.undo"><span>Undo</span><kbd>Ctrl Z</kbd></button>
+              <button data-cmd="edit.redo"><span>Redo</span><kbd>Ctrl ⇧ Z</kbd></button>
+              <div class="sep"></div>
+              <button data-cmd="edit.selectAll"><span>Select All</span><kbd>A</kbd></button>
+              <button data-cmd="edit.deselect"><span>Deselect All</span><kbd>Alt A</kbd></button>
+              <button data-cmd="edit.invert"><span>Invert Selection</span><kbd>Ctrl I</kbd></button>
+              <div class="sep"></div>
+              <button data-cmd="edit.delete"><span>Delete</span><kbd>X</kbd></button>
+              <button data-cmd="edit.duplicate"><span>Duplicate</span><kbd>⇧ D</kbd></button>
+            </div>
+          </div>
+          <div class="menu">
+            <button class="menu-btn" data-menu="add">Add</button>
+            <div class="menu-pop" id="menu-add">
+              <div class="menu-label">Mesh</div>
+              <button data-cmd="add.plane"><span>Plane</span></button>
+              <button data-cmd="add.cube"><span>Cube</span></button>
+              <button data-cmd="add.circle"><span>Circle</span></button>
+              <button data-cmd="add.uvsphere"><span>UV Sphere</span></button>
+              <button data-cmd="add.icosphere"><span>Ico Sphere</span></button>
+              <button data-cmd="add.cylinder"><span>Cylinder</span></button>
+              <button data-cmd="add.cone"><span>Cone</span></button>
+              <button data-cmd="add.torus"><span>Torus</span></button>
+            </div>
+          </div>
+          <div class="menu">
+            <button class="menu-btn" data-menu="mesh">Mesh</button>
+            <div class="menu-pop" id="menu-mesh">
+              <button data-cmd="mesh.extrude"><span>Extrude Faces</span><kbd>E</kbd></button>
+              <button data-cmd="mesh.inset"><span>Inset Faces</span><kbd>I</kbd></button>
+              <button data-cmd="mesh.subdivide"><span>Subdivide</span></button>
+              <div class="sep"></div>
+              <button data-cmd="mesh.merge"><span>Merge by Distance</span></button>
+              <button data-cmd="mesh.normals"><span>Recalculate Normals</span></button>
+              <div class="sep"></div>
+              <button data-cmd="mesh.smooth"><span>Shade Smooth</span></button>
+              <button data-cmd="mesh.flat"><span>Shade Flat</span></button>
+            </div>
+          </div>
+          <div class="menu">
+            <button class="menu-btn" data-menu="view">View</button>
+            <div class="menu-pop" id="menu-view">
+              <button data-cmd="view.front"><span>Front</span><kbd>1</kbd></button>
+              <button data-cmd="view.right"><span>Right</span><kbd>3</kbd></button>
+              <button data-cmd="view.top"><span>Top</span><kbd>7</kbd></button>
+              <button data-cmd="view.camera"><span>Camera View</span><kbd>0</kbd></button>
+              <div class="sep"></div>
+              <button data-cmd="view.persp"><span>Perspective / Ortho</span><kbd>5</kbd></button>
+              <button data-cmd="view.frameSel"><span>Frame Selected</span><kbd>.</kbd></button>
+              <button data-cmd="view.frameAll"><span>Frame All</span><kbd>Home</kbd></button>
+              <div class="sep"></div>
+              <button data-cmd="view.xray"><span>Toggle X-Ray</span><kbd>Alt Z</kbd></button>
+            </div>
+          </div>
+          <div class="menu">
+            <button class="menu-btn" data-menu="help">Help</button>
+            <div class="menu-pop" id="menu-help">
+              <button data-cmd="help.keys"><span>Keyboard Shortcuts</span><kbd>?</kbd></button>
+            </div>
+          </div>
+        </nav>
+
+        <div class="workspaces">
+          <button class="ws active">Layout</button>
+          <button class="ws" disabled>Modeling</button>
+          <button class="ws" disabled>Shading</button>
+        </div>
+
+        <div class="top-spacer"></div>
+
+        <div class="top-stats" id="top-stats">Verts: 8 &nbsp; Edges: 12 &nbsp; Faces: 6</div>
+      </header>
+
+      <div class="workspace">
+        <aside class="toolbar" id="toolbar">
+          <button class="tool active" data-tool="select" title="Select (W)">
+            <svg viewBox="0 0 24 24"><path d="M5 3.5 19 12l-7.2 1.6L9.2 21 5 3.5z" /></svg>
+          </button>
+          <button class="tool" data-tool="cursor" title="3D Cursor">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6" />
+              <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+            </svg>
+          </button>
+          <div class="tool-sep"></div>
+          <button class="tool" data-tool="move" title="Move (G)">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3v18M3 12h18" />
+              <path d="M12 3 9.4 6.2h5.2L12 3zM12 21l2.6-3.2H9.4L12 21zM3 12l3.2-2.6v5.2L3 12zM21 12l-3.2 2.6V9.4L21 12z" fill="currentColor" stroke="none" />
+            </svg>
+          </button>
+          <button class="tool" data-tool="rotate" title="Rotate (R)">
+            <svg viewBox="0 0 24 24">
+              <path d="M19.2 12a7.2 7.2 0 1 1-2.1-5.1" fill="none" />
+              <path d="M19.4 4.8v5.2h-5.2" fill="none" />
+            </svg>
+          </button>
+          <button class="tool" data-tool="scale" title="Scale (S)">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 17 17 7" />
+              <path d="M8 7h9v9" fill="none" />
+              <rect x="4.2" y="14.8" width="5" height="5" rx="0.6" fill="currentColor" stroke="none" />
+            </svg>
+          </button>
+          <div class="tool-sep"></div>
+          <button class="tool" data-tool="extrude" title="Extrude (E)">
+            <svg viewBox="0 0 24 24">
+              <path d="M5 16.5 12 19.8 19 16.5v-5.2L12 8.2 5 11.3z" fill="none" />
+              <path d="M12 8.2V4.2M10 5.6 12 3.6 14 5.6" fill="none" />
+            </svg>
+          </button>
+          <button class="tool" data-tool="inset" title="Inset Faces (I)">
+            <svg viewBox="0 0 24 24">
+              <rect x="4" y="4" width="16" height="16" rx="1" fill="none" />
+              <rect x="8" y="8" width="8" height="8" rx="0.5" fill="none" />
+            </svg>
+          </button>
+          <div class="tool-sep"></div>
+          <button class="tool" data-cmd="add.menu" title="Add Primitive (Shift A)">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 5 19 8.8v6.4L12 19l-7-3.8V8.8L12 5z" fill="none" />
+              <path d="M12 11v6.8M12 11 5.4 8.1M12 11l6.6-2.9" />
+            </svg>
+          </button>
+        </aside>
+
+        <main class="viewport-wrap">
+          <div class="viewport-header" id="viewport-header">
+            <div class="vh-left">
+              <div class="mode-switch" id="mode-switch">
+                <button data-mode="object" class="active">Object Mode</button>
+                <button data-mode="edit">Edit Mode</button>
+              </div>
+              <div class="sel-modes hidden" id="sel-modes">
+                <button data-sel="vertex" class="active" title="Vertex (1)">
+                  <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.2" fill="currentColor" /></svg>
+                </button>
+                <button data-sel="edge" title="Edge (2)">
+                  <svg viewBox="0 0 20 20"><path d="M4 15.5 16 4.5" /><circle cx="4" cy="15.5" r="2" fill="currentColor" /><circle cx="16" cy="4.5" r="2" fill="currentColor" /></svg>
+                </button>
+                <button data-sel="face" title="Face (3)">
+                  <svg viewBox="0 0 20 20"><path d="M4 5.5h12v9H4z" fill="currentColor" opacity="0.35" /><path d="M4 5.5h12v9H4z" fill="none" /></svg>
+                </button>
+              </div>
+              <div class="orient" title="Transform Orientation">
+                <select id="orientation">
+                  <option value="global">Global</option>
+                  <option value="local">Local</option>
+                  <option value="normal">Normal</option>
+                  <option value="view">View</option>
+                </select>
+              </div>
+              <div class="pivot" title="Pivot Point">
+                <select id="pivot">
+                  <option value="median">Median Point</option>
+                  <option value="cursor">3D Cursor</option>
+                  <option value="individual">Individual Origins</option>
+                </select>
+              </div>
+            </div>
+            <div class="vh-right">
+              <div class="shading" id="shading">
+                <button data-shade="wire" title="Wireframe">
+                  <svg viewBox="0 0 20 20"><path d="M3.5 14.2 10 4.8l6.5 9.4H3.5z" fill="none" /><path d="M10 4.8v9.4M6 12.4h8" /></svg>
+                </button>
+                <button data-shade="solid" class="active" title="Solid">
+                  <svg viewBox="0 0 20 20"><path d="M3.5 14.2 10 4.8l6.5 9.4H3.5z" fill="currentColor" opacity="0.55" /><path d="M3.5 14.2 10 4.8l6.5 9.4H3.5z" fill="none" /></svg>
+                </button>
+                <button data-shade="material" title="Material Preview">
+                  <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.2" fill="currentColor" opacity="0.55" /><circle cx="10" cy="10" r="6.2" fill="none" /></svg>
+                </button>
+              </div>
+              <button class="icon-btn" id="btn-xray" title="X-Ray (Alt Z)">X-Ray</button>
+              <button class="icon-btn active" id="btn-overlays" title="Overlays">Overlays</button>
+            </div>
+          </div>
+
+          <div class="viewport" id="viewport">
+            <canvas id="c"></canvas>
+            <div class="nav-gizmo" id="nav-gizmo"></div>
+            <div class="view-name" id="view-name">User Persp</div>
+            <div class="modal-banner hidden" id="modal-banner"></div>
+            <div class="box-select hidden" id="box-select"></div>
+            <div class="last-op hidden" id="last-op"></div>
+            <div class="hint-bar" id="hint-bar">
+              Shift+A Add &nbsp;·&nbsp; Tab Edit &nbsp;·&nbsp; G/R/S Transform &nbsp;·&nbsp; E Extrude &nbsp;·&nbsp; I Inset &nbsp;·&nbsp; MMB Orbit
+            </div>
+          </div>
+        </main>
+
+        <aside class="right-col">
+          <section class="panel outliner-panel">
+            <header class="panel-h">
+              <span>Outliner</span>
+              <button class="mini" data-cmd="add.cube" title="Add Cube">+</button>
+            </header>
+            <div class="outliner" id="outliner"></div>
+          </section>
+          <section class="panel props-panel">
+            <div class="prop-tabs" id="prop-tabs">
+              <button data-ptab="object" class="active" title="Object">
+                <svg viewBox="0 0 18 18"><rect x="3" y="3" width="12" height="12" rx="1.4" fill="none" stroke="currentColor" /></svg>
+              </button>
+              <button data-ptab="data" title="Object Data">
+                <svg viewBox="0 0 18 18"><path d="M3 13.2 9 3.6l6 9.6H3z" fill="none" stroke="currentColor" /></svg>
+              </button>
+              <button data-ptab="material" title="Viewport Display">
+                <svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="5.2" fill="none" stroke="currentColor" /></svg>
+              </button>
+              <button data-ptab="tool" title="Active Tool">
+                <svg viewBox="0 0 18 18"><path d="M4 3.4 14.2 9l-5.4 1.2L6.8 15 4 3.4z" fill="none" stroke="currentColor" /></svg>
+              </button>
+            </div>
+            <div class="props" id="props"></div>
+          </section>
+        </aside>
+      </div>
+
+      <footer class="statusbar" id="statusbar">
+        <span id="sb-mode">Object Mode</span>
+        <span class="dot">·</span>
+        <span id="sb-sel">Nothing selected</span>
+        <span class="grow"></span>
+        <span id="sb-info">Flare 1.0 — browser modeler</span>
+      </footer>
+    </div>
+
+    <div class="overlay hidden" id="overlay"></div>
+    <div class="float-menu hidden" id="float-menu"></div>
+    <div class="context-menu hidden" id="context-menu"></div>
+    <div class="modal hidden" id="keymap-modal">
+      <div class="modal-card">
+        <header>
+          <h2>Keyboard Shortcuts</h2>
+          <button class="icon-btn" id="keymap-close">✕</button>
+        </header>
+        <div class="keymap-grid" id="keymap-grid"></div>
+      </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+  <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a299e676cc8498a5',t:'MTc4NjQ3OTE5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
