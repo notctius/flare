@@ -58,6 +58,18 @@ New meshes spawn at the 3D cursor. After adding a primitive, the *Adjust Last Op
 
 Export the scene from **File → Export OBJ** or **Export glTF**.
 
+## Credits
+
+Built by the project author with hands-on help from an AI coding agent on
+[Arena.ai](https://arena.ai). The agent contributed the overall architecture,
+the mesh engine (`src/mesh/`), the Three.js viewport, the editing tools
+(extrude, inset, subdivide, merge, normals), the UI chrome, and the export
+pipelines — iterating together with the author to design the Blender-style
+workflow and fix issues in real time.
+
+If you run into a bug or have an idea, please open an issue — it's a genuinely
+collaborative effort, and feedback shapes what gets built next.
+
 ## Contributing
 
 Bugs, feature ideas, and pull requests are welcome — see `CONTRIBUTING.md`.
